@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>파크 포트폴리오</title>
+<style>
+/* =====================================================
+   1. 기본 브라우저 세팅 및 전체 컨테이너
+   ===================================================== */
+body { 
+  margin:0; font-family:sans-serif; background:#000; overflow:hidden; 
+  user-select: none; 
+  -webkit-user-select: none;
+}
+.container { position:relative; width: 100vw; height:100vh; overflow:hidden; }
+
+/* 16:9 비율 배경 지도 자동 계산 박스 */
+.map-wrapper {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  aspect-ratio: 16 / 9; min-width: 100%; min-height: 100%;
+}
+@media (aspect-ratio: 16/9) { .map-wrapper { width: 100%; height: 100%; } }
+@media (max-aspect-ratio: 16/9) { .map-wrapper { height: 100%; width: auto; } }
+@media (min-aspect-ratio: 16/9) { .map-wrapper { width: 100%; height: auto; } }
+.map-wrapper img.bg { width:100%; height:100%; display: block; pointer-events: none; }
+
+/* =====================================================
+   2. [위치 조절 완료] VR 스위치 원래 위치인 top: 40px, left: 40px로 버튼 업로드
+   ===================================================== */
+.top-left { position:absolute; top:40px; left:40px; display:flex; flex-direction:column; gap:10px; z-index:10; }
+.top-left .btn {
+  display: block; 
+  width: auto;         
+  min-width: 110px;    
+  padding: 6px 16px;   
+  font-size: 16px;     
+  color: #000 !important; text-align: center; text-decoration: none;
+  background: rgba(255, 255, 255, 0.1);             
+  border: none; 
+  border-radius: 6px;                         
+  cursor:pointer; transition: transform 0.2s ease;
+  outline: none;
+  user-select: none;
+  white-space: nowrap; 
+}
+.top-left .btn:hover { 
+  transform: scale(1.1); 
+}
+
+/* =====================================================
+   3. 지도 마커 핀 및 스팟 라벨 세팅
+   ===================================================== */
+.spot { 
+  position:absolute; width:32px; height:32px; cursor:grab; z-index:5; 
+  transform: translate(-50%, -50%); 
+  transition: transform 0.2s ease-in-out; 
+  text-align:center; 
+}
+.spot:active { cursor:grabbing; }
+.spot img { width:100%; height:100%; display: block; pointer-events:none; }
+.spot:hover { transform: translate(-50%, -50%) scale(1.3); }
+
+.spot-label {
+  display: block; position: absolute; left: 50%; transform: translateX(-50%);
+  font-size: 14px;     
+  color: #000; font-weight: bold; white-space: nowrap; 
+  pointer-events: auto; 
+  margin-top: 0px; 
+  padding-top: 2px; 
+  
+  text-shadow: 
+    -2px -2px 0 #fff,  2px -2px 0 #fff, 
+    -2px  2px 0 #fff,  2px  2px 0 #fff,
+     0px -2px 0 #fff,  0px  2px 0 #fff,
+    -2px  0px 0 #fff,  2px  0px 0 #fff,
+    -1px -1px 3px #fff, 1px 1px 3px #fff;
+}
+
+/* =====================================================
+   4. 팝업 모달 프레임 및 이미지 대화면 규격 설정
+   ===================================================== */
+.popup { display:none; position:fixed; top:0; left:0; width:100%; height:100%; justify-content:center; align-items:center; z-index:99; background: rgba(0,0,0,0.7); }
+.popup.active { display:flex; flex-direction:column; }
+
+.image-area { 
+  display: flex; justify-content: center; align-items: center; gap: 30px;            
+  width: 95%;           
+  max-width: 1600px;    
+}
+
+.image-area img { 
+  width: 49%;           
+  max-width: 75%;       
+  flex: 1 1 auto;       
+  aspect-ratio: 16 / 9; 
+  object-fit: cover;    
+  border-radius:12px;   
+  box-shadow:0 8px 25px rgba(0,0,0,0.6); 
+}
+
+/* 슬라이드 화살표 */
+.slide-ctrl { margin-top: 25px; display: flex; gap: 15px; }
+.slide-btn { background: rgba(255,255,255,0.3); border:none; color:#fff; font-size:24px; padding:6px 16px; border-radius:6px; cursor:pointer; transition: transform 0.2s; }
+.slide-btn:hover { transform: scale(1.2); }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- 배경 맵 구역 -->
+  <div class="map-wrapper" id="mapWrapper">
+    <img src="../assets/img/park/main.jpg" class="bg">
+
+    <!-- 지도 위에 올라갈 마커 스팟 핀 구역 -->
+    <div class="spot" style="top:55%; left:50%;" data-spot="spot2"><img src="../assets/icon/marker.svg"><span class="spot-label">워터파크</span></div>
+    <div class="spot" style="top:85%; left:25%;" data-spot="spot3"><img src="../assets/icon/marker.svg"><span class="spot-label">전망대</span></div>
+    <div class="spot" style="top:85%; left:34%;" data-spot="spot4"><img src="../assets/icon/marker.svg"><span class="spot-label">숲속펜션</span></div>
+    <div class="spot" style="top:80%; left:20%;" data-spot="spot5"><img src="../assets/icon/marker.svg"><span class="spot-label">사계절 썰매장</span></div>
+    <div class="spot" style="top:58%; left:33%;" data-spot="spot6"><img src="../assets/icon/marker.svg"><span class="spot-label">조각공원</span></div>
+    <div class="spot" style="top:70%; left:39%;" data-spot="spot8"><img src="../assets/icon/marker.svg"><span class="spot-label">꽃동산</span></div>
+    <div class="spot" style="top:73%; left:60%;" data-spot="spot9"><img src="../assets/icon/marker.svg"><span class="spot-label">수상펜션</span></div>
+  </div>
+
+  <!-- 왼쪽 상단 제어 버튼 그룹 -->
+  <div class="top-left">
+    <button class="btn" id="fullscreenBtn" onclick="toggleFullScreen()">전체화면</button>
+    <button class="btn" onclick="backToMainHome()">메인화면</button>
+  </div>
+</div>
+
+<!-- 팝업 모달 프레임 -->
+<div class="popup" id="spotPopup">
+  <div class="image-area" id="imageArea"></div>
+  <div class="slide-ctrl" id="slideController">
+    <button class="slide-btn" onclick="moveImage(-1)">◀</button>
+    <button class="slide-btn" onclick="moveImage(1)">▶</button>
+  </div>
+</div>
+
+<script>
+// =====================================================
+// 5. 전체화면 기능
+// =====================================================
+function toggleFullScreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+    document.getElementById("fullscreenBtn").innerText = "전체화면 해제";
+  } else {
+    document.exitFullscreen();
+    document.getElementById("fullscreenBtn").innerText = "전체화면";
+  }
+}
+
+// =====================================================
+// 6. [데이터베이스] 팝업 연동용 이미지 파일 매칭 데이터셋
+// =====================================================
+const spotImages = {
+  spot1: ["spot1-1.jpg"],                    
+  spot2: ["spot2-1.jpg"],     
+  spot3: ["spot3-1.jpg", "spot3-2.jpg"], 
+  spot4: ["spot4-1.jpg", "spot4-2.jpg"], 
+  spot5: ["spot5-1.jpg", "spot5-2.jpg"], 
+  spot6: ["spot6-1.jpg"],
+  spot7: ["spot7-1.jpg"], 
+  spot8: ["spot8-1.jpg"], 
+  spot9: ["spot9-1.jpg","spot9-2.jpg"]
+};
+
+let currentSpot = "", currentIndex = 0;
+const imageArea = document.getElementById("imageArea");
+const controller = document.getElementById("slideController");
+const popup = document.getElementById("spotPopup");
+
+// =====================================================
+// 7. 팝업창 오픈 및 장수별 분기 판단 기능 구역
+// =====================================================
+function openSpot(spotName){
+  const imgList = spotImages[spotName];
+  if (!imgList) return;
+  
+  currentSpot = spotName;
+  currentIndex = 0;
+  imageArea.innerHTML = ""; 
+
+  if (imgList.length <= 2) {
+    controller.style.display = "none";
+    imageArea.innerHTML = imgList.map(img => `<img src="../assets/img/park/${img}">`).join('');
+  } else {
+    controller.style.display = "flex";
+    updateSlider();
+  }
+  popup.classList.add("active");
+}
+
+function updateSlider() {
+  imageArea.innerHTML = `<img src="../assets/img/park/${spotImages[currentSpot][currentIndex]}">`;
+}
+
+function moveImage(direction) {
+  const imgList = spotImages[currentSpot];
+  currentIndex = (currentIndex + direction + imgList.length) % imgList.length;
+  updateSlider();
+}
+
+/* 팝업창 내부 어디를 클릭하든 무조건 닫기 처리 */
+popup.addEventListener("click", () => {
+  popup.classList.remove("active");
+  imageArea.innerHTML = ""; 
+});
+
+// =====================================================
+// 8. 마커 핀 마우스 드래그 및 추적 범위 광역화
+// =====================================================
+const mapWrapper = document.getElementById('mapWrapper');
+let activeSpot = null; 
+let isDragging = false, startX = 0, startY = 0, hasMoved = false;
+let lastX = 0, lastY = 0; 
+
+document.querySelectorAll('.spot').forEach(spot => {
+  spot.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    hasMoved = false;
+    activeSpot = spot; 
+    startX = e.clientX - spot.offsetLeft;
+    startY = e.clientY - spot.offsetTop;
+    lastX = e.clientX;
+    lastY = e.clientY;
+  });
+});
+
+document.addEventListener('mousemove', (e) => {
+  if(!isDragging || !activeSpot) return;
+ 
+  const dx = Math.abs(e.clientX - lastX);
+  const dy = Math.abs(e.clientY - lastY);
+
+  if(dx > 5 || dy > 5){
+      hasMoved = true;
+  }
+  activeSpot.style.left = `${e.clientX - startX}px`;
+  activeSpot.style.top = `${e.clientY - startY}px`;
+});
+
+document.addEventListener('mouseup', () => {
+  if (!isDragging || !activeSpot) return;
+  isDragging = false;
+  
+  activeSpot.style.left = `${(activeSpot.offsetLeft / mapWrapper.offsetWidth) * 100}%`;
+  activeSpot.style.top = `${(activeSpot.offsetTop / mapWrapper.offsetHeight) * 100}%`;
+
+  if (!hasMoved) {
+    const spotName = activeSpot.getAttribute('data-spot');
+    openSpot(spotName);
+  }
+  
+  activeSpot = null; 
+});
+
+// =====================================================
+// 9. 고정 메인화면 절대 경로 이식
+// =====================================================
+function backToMainHome() {
+  window.location.href = "file:///C:/Users/k/Desktop/abc/abc/index.html";
+}
+</script>
+</body>
+</html>
