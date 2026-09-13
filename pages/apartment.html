@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>아파트 포트폴리오</title>
+<style>
+  body{
+    margin:0;
+    font-family:sans-serif;
+    background:#000;
+    color:#fff;
+    overflow:hidden;
+  }
+  .container{
+    position:relative;
+    height:100vh;
+    overflow:hidden;
+  }
+  .container img.bg{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    animation: blurBackground 1s ease-in-out forwards;
+    animation-delay: 1.5s; 
+  }
+  @keyframes blurBackground {
+    to {
+      filter: blur(3px); 
+    }
+  }
+  .left-buttons{
+    position:absolute;
+    top:40px;
+    left:40px;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    z-index:5;
+    opacity: 0;
+    animation: fadeInUI 1.6s ease-out forwards; 
+    animation-delay: 2.2s;
+  }
+  .left-buttons .btn{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    padding:8px 14px;
+    border-radius:6px;
+    font-weight:bold;
+    font-size:16px;
+    cursor:pointer;
+    color:#000;
+    background:rgba(255,255,255,0.1);
+    transition:all 0.3s ease;
+  }
+  .left-buttons .btn img{
+    width:28px;
+    height:28px;
+  }
+  .left-buttons .btn.active{
+    color:#fff;
+    background:rgba(0,0,0,0.3);
+  }
+  .left-buttons .btn:hover{
+    transform:scale(1.1);
+  }
+  .top-right{
+    position:absolute;
+    top:100px;   
+    left:40px;   
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    z-index:10;
+    opacity: 0;
+    animation: fadeInUI 1.6s ease-out forwards; 
+    animation-delay: 2.2s;
+  }
+  .top-right .btn{
+    background:rgba(255,255,255,0.1);
+    color:#000;
+    font-size:16px;
+    padding:6px 12px;
+    border-radius:6px;
+    cursor:pointer;
+    text-align:center;
+    transition:transform 0.2s ease;
+  }
+  .top-right .btn:hover{
+    transform:scale(1.1);
+  }
+  @keyframes fadeInUI {
+    to {
+      opacity: 1;
+    }
+  }
+  .popup{
+    display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    justify-content:center;
+    align-items:center;
+    flex-direction:column;
+    z-index:9;
+    background:rgba(0,0,0,0.15);
+  }
+  .popup.active{
+    display:flex;
+  }
+  
+  /* 가로 4열 배치 고정 */
+  .gallery-grid{
+    position:absolute;
+    top:20px;
+    left:180px;
+    right:40px;
+    bottom:20px;
+    display:grid;
+    grid-template-columns: repeat(4, 1fr); 
+    gap:20px;
+    align-items: start;
+    justify-items: stretch;
+    overflow-y:auto;
+    overflow-x:hidden;
+    padding:10px 20px 20px 10px;
+    box-sizing:border-box;
+    z-index:3;
+    opacity: 0;
+    transform: translateY(30px); 
+    animation: fadeUpGallery 1.6s ease-out forwards; 
+    animation-delay: 2.2s; 
+  }
+  
+  /* 리스트 카드 이미지 스타일 및 은은한 백색 테두리 효과 */
+  .gallery-grid img{
+    width:100%;
+    height:200px;
+    object-fit:cover;
+    border-radius:12px;
+    cursor:pointer;
+    transition:0.25s;
+    box-shadow: 0 0 2px 1px rgba(255, 255, 255, 0.4), 0 4px 12px rgba(0,0,0,.3);
+  }
+  .gallery-grid img:hover{
+    transform:scale(1.03);
+  }
+  @keyframes fadeUpGallery {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .popup.active {
+    display: flex !important;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.88) !important;
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  /* 팝업 컨텐츠 기준 박스 */
+  .gallery-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 75%; 
+    max-width: 800px;
+    background: transparent !important;
+    z-index: 10001;
+  }
+  
+  /* 화살표 버튼 정렬 기준 */
+  .popup-nav-btn {
+    position: absolute; 
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    border: none;
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    font-size: 26px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 10010; 
+    user-select: none;
+  }
+  .popup-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.9);
+    color: #000;
+    transform: translateY(-50%) scale(1.1);
+  }
+  
+  /* 동그란 원 전체가 이미지 영역 밖으로 완전히 탈출하도록 마진 최적화 (-75px) */
+  .popup-nav-btn.prev { left: -75px; }
+  .popup-nav-btn.next { right: -75px; }
+  
+  /* 닫기 버튼 우측 상단 정렬 */
+  .popup-close-zone {
+    position: absolute;
+    top: -50px;
+    right: 0px;
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 6px 16px;
+    border-radius: 4px;
+    z-index: 10010;
+  }
+  
+  /* 넘버링 카운터 중앙 상단 정렬 */
+  .popup-counter {
+    position: absolute;
+    top: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(5px);
+    padding: 6px 20px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+    user-select: none;
+    z-index: 10010;
+  }
+  .main-img-wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #000000 !important; 
+    border-radius: 10px !important; 
+    overflow: hidden !important;    
+    z-index: 10002;
+    -webkit-mask-image: -webkit-radial-gradient(white, black) !important;
+    mask-image: radial-gradient(white, black) !important;
+  }
+  .main-img {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 68vh !important; 
+    object-fit: contain !important;
+    background: #000000 !important;
+    border-radius: 10px !important;
+    display: block !important;
+    overflow: hidden !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6) !important;
+    -webkit-mask-image: -webkit-radial-gradient(white, black) !important;
+    mask-image: radial-gradient(white, black) !important;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <img src="../assets/img/apartment/main.jpg" class="bg">
+  <div class="left-buttons">
+    <!-- 🌟 [영구 고정 완비] 정확한 고유 VR 링크로 최종 빌드 처리를 마쳤습니다 -->
+    <div class="btn" id="vrBtn" onclick="const vrUrl = '../vr_apt/index.html'; if(typeof setActiveButton === 'function'){ setActiveButton('vrBtn'); } window.open(vrUrl, '_blank');">
+      <img src="../assets/icon/play.svg">
+       VR 투어
+    </div>
+  </div>
+  <div class="top-right">
+    <div class="btn" id="closeBtn">
+      메인화면
+    </div>
+  </div>
+  <div class="gallery-grid" id="galleryGrid">
+    <img src="../assets/img/apartment/apt0.jpg" alt="아파트 이미지 0">
+    <img src="../assets/img/apartment/apt1.jpg" alt="아파트 이미지 1">
+    <img src="../assets/img/apartment/apt2.jpg" alt="아파트 이미지 2">
+    <img src="../assets/img/apartment/apt3.jpg" alt="아파트 이미지 3">
+    <img src="../assets/img/apartment/apt4.jpg" alt="아파트 이미지 4">
+    <img src="../assets/img/apartment/apt5.jpg" alt="아파트 이미지 5">
+    <img src="../assets/img/apartment/apt6.jpg" alt="아파트 이미지 6">
+    <img src="../assets/img/apartment/apt7.jpg" alt="아파트 이미지 7">
+    <img src="../assets/img/apartment/apt8.jpg" alt="아파트 이미지 8">
+    <img src="../assets/img/apartment/apt9.jpg" alt="아파트 이미지 9">
+  </div>
+</div>
+<div class="popup" id="customPopup" style="display: none;">
+  <div class="gallery-content">
+    <div class="popup-close-zone" id="popupCloseBtn">닫기 ✕</div>
+    <div class="popup-counter" id="popupCounter">1 / 10</div>
+    <button class="popup-nav-btn prev" id="popupPrevBtn">❮</button>
+    <div class="main-img-wrapper">
+      <img src="" class="main-img" id="popupMainImg">
+    </div>
+    <button class="popup-nav-btn next" id="popupNextBtn">❯</button>
+  </div>
+</div>
+<script src="../js/common.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const gridImages = Array.from(document.querySelectorAll("#galleryGrid img"));
+    const popup = document.getElementById("customPopup");
+    const popupImg = document.getElementById("popupMainImg");
+    const closeBtn = document.getElementById("popupCloseBtn");
+    const prevBtn = document.getElementById("popupPrevBtn");
+    const nextBtn = document.getElementById("popupNextBtn");
+    const counter = document.getElementById("popupCounter");
+    let currentIndex = 0;
+    function updateCounter() {
+      counter.innerText = `${currentIndex + 1} / ${gridImages.length}`;
+    }
+    function openPopup(index) {
+      currentIndex = index;
+      popupImg.src = gridImages[currentIndex].src;
+      updateCounter();
+      popup.classList.add("active");
+    }
+    function closePopup() {
+      popup.classList.remove("active");
+    }
+    function prevImage(e) {
+      if(e) e.stopPropagation();
+      currentIndex = (currentIndex === 0) ? gridImages.length - 1 : currentIndex - 1;
+      popupImg.src = gridImages[currentIndex].src;
+      updateCounter();
+    }
+    function nextImage(e) {
+      if(e) e.stopPropagation();
+      currentIndex = (currentIndex === gridImages.length - 1) ? 0 : currentIndex + 1;
+      popupImg.src = gridImages[currentIndex].src;
+      updateCounter();
+    }
+    gridImages.forEach((img, index) => {
+      img.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openPopup(index);
+      });
+    });
+    prevBtn.addEventListener("click", prevImage);
+    nextBtn.addEventListener("click", nextImage);
+    closeBtn.addEventListener("click", closePopup);
+    popup.addEventListener("click", closePopup);
+    popupImg.addEventListener("click", (e) => e.stopPropagation());
+    document.addEventListener("keydown", (e) => {
+      if (!popup.classList.contains("active")) return;
+      if (e.key === "ArrowLeft") prevImage();
+      if (e.key === "ArrowRight") nextImage();
+      if (e.key === "Escape") closePopup();
+    });
+  });
+</script>
+</body>
+</html>

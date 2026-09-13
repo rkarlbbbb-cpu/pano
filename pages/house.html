@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>이동식주택 포트폴리오</title>
+
+<style>
+/* =====================================================
+   하우스 포트폴리오 전용 독립 CSS (Scoped)
+   ===================================================== */
+
+body {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: #000 !important;
+  overflow: hidden !important; 
+  user-select: none; 
+  -webkit-user-select: none;
+}
+
+#house-scope {
+  margin: 0;
+  font-family: sans-serif;
+  background: #000;
+  color: #fff;
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center; 
+  align-items: center; 
+}
+
+/* 배경 이미지 (웅장한 크로스페이드 연출을 위해 기본 전환 시간을 3초(3s)로 세팅) */
+#house-scope .bg-image {
+  position: absolute; 
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 3s ease-in-out;
+}
+
+/* 아래쪽 기본 베이스 레이어 */
+#house-scope #bgBase {
+  z-index: 1;
+}
+
+/* 위쪽에 얹어두고 투명도를 조절할 얼터너티브 레이어 */
+#house-scope #bgAlt {
+  z-index: 2;
+  opacity: 0; 
+}
+
+/* 2.2초 뒤에 1.6초 동안 전체 레이아웃이 위로 부드럽게 진입 */
+#house-scope .main-layout {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 900px; 
+  height: 94vh; 
+  padding: 10px;
+  box-sizing: border-box;
+  gap: 15px; 
+  z-index: 5; 
+  justify-content: center;
+  
+  opacity: 0;
+  transform: translateY(30px); 
+  animation: fadeUpGallery 1.6s ease-out forwards; 
+  animation-delay: 2.2s; 
+}
+
+/* 카드 배열용 위로 스르륵 페이드인 애니메이션 */
+@keyframes fadeUpGallery {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 1. 상단 비디오 영역 (16:9 규격 및 재생 전 투명화) */
+#house-scope .video-section {
+  width: 100%;
+  aspect-ratio: 16 / 9; 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: transparent !important; 
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  position: relative;
+}
+
+/* 비디오 투명화 전환 효과 시간 유지 */
+#house-scope .video-section video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; 
+  background: transparent !important;
+  z-index: 5;
+  visibility: hidden; 
+  opacity: 0;
+  transition: opacity 1.6s ease, visibility 1.6s ease; /* 1.6초 동안 부드럽게 페이드 아웃 */
+}
+
+/* 비디오 구역 정중앙 거대 재생 화살표 오버레이 */
+#house-scope .center-play-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.1); 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 15;
+  cursor: pointer;
+  transition: opacity 0.4s ease; 
+  opacity: 1;
+}
+
+/* 재생 중일 때는 오버레이 완전 차단 */
+#house-scope .center-play-overlay.playing {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 흰색 원형 배경 */
+#house-scope .center-play-btn {
+  width: 70px;
+  height: 70px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+#house-scope .center-play-overlay:hover .center-play-btn {
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 1);
+}
+
+/* 삼각형 재생 화살표 아이콘 */
+#house-scope .center-play-btn::after {
+  content: '';
+  display: block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 12px 0 12px 22px;
+  border-color: transparent transparent transparent #000;
+  margin-left: 5px;
+}
+
+/* VR 스위치 원래 위치인 top: 40px, left: 40px 구역 정렬 보존 */
+#house-scope .top-right {
+  position: absolute;
+  top: 40px;    
+  left: 40px;   
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 10;
+  opacity: 0;
+  animation: fadeInUI 1.6s ease-out forwards; 
+  animation-delay: 2.2s;
+}
+
+@keyframes fadeInUI {
+  to {
+    opacity: 1;
+  }
+}
+
+/* 파크 페이지 스타일 반영: 검은 글씨와 은은한 테두리 조합 */
+#house-scope .top-right .btn {
+  display: block;
+  width: auto;         
+  min-width: 110px;    
+  background: rgba(255, 255, 255, 0.1); 
+  color: #000 !important;                           
+  font-size: 16px;                       
+  padding: 6px 16px;                     
+  border-radius: 6px;                    
+  cursor: pointer;
+  text-align: center;
+  border: 1px solid rgba(0, 0, 0, 0.2);                          
+  user-select: none;
+  white-space: nowrap;                   
+  transition: transform 0.2s ease, background 0.2s ease;       
+}
+
+#house-scope .top-right .btn:hover {
+  transform: scale(1.1);
+  background: rgba(255, 255, 255, 0.3);
+}
+</style>
+</head>
+
+<body>
+
+<div id="house-scope">
+
+  <!-- 2개의 배경화면 레이어를 미리 포개어 배치 -->
+  <img src="../assets/img/house/main.jpg" class="bg-image" id="bgBase">
+  <img src="../assets/img/house/main01.jpg" class="bg-image" id="bgAlt">
+
+  <!-- 화면 전체 기준 원래 위치(top:40px, left:40px) 고정 -->
+  <div class="top-right">
+    <div class="btn" id="closeBtn" onclick="goToMainMenu()">
+      메인화면
+    </div>
+  </div>
+
+  <div class="main-layout">
+
+    <!-- 🎥 상단 영상 구역 -->
+    <div class="video-section">
+      
+      <!-- 영상 중앙 거대 재생 화살표 버튼 오버레이 구역 -->
+      <div class="center-play-overlay" id="playOverlay" onclick="startHouseVideo()">
+        <div class="center-play-btn"></div>
+      </div>
+
+      <!-- 비디오 태그 -->
+      <video id="houseVideo" playsinline webkit-playsinline preload="auto">
+        브라우저가 비디오 태그를 지원하지 않습니다.
+      </video>
+    </div>
+
+  </div> <!-- .main-layout 끝 -->
+
+</div> <!-- #house-scope 끝 -->
+
+<script>
+  const houseVideo = document.getElementById('houseVideo');
+  const playOverlay = document.getElementById('playOverlay');
+  let isResetting = false; 
+
+  // [확인 완료] 최종 요청 영상 주소 바인딩 완료
+  const videoSource = document.createElement('source');
+  videoSource.src = "https://gni0pyddpyk3ue6l.public.blob.vercel-storage.com/video1.mp4";
+  videoSource.type = "video/mp4";
+  houseVideo.appendChild(videoSource);
+
+  // 비디오 파일 미리 로딩 시작
+  houseVideo.load();
+
+  // 배경 이미지 제어 플래그 변수
+  let isAlternateBg = false;    
+  let nextTurnPrepared = true;  
+
+  // 1. 메인화면 버튼 이동 함수 (상대 경로로 수정 완료)
+  function goToMainMenu() {
+    window.location.href = "../index.html"; 
+  }
+
+  // 2. 우회 강제 재생 기능 및 배경 무한교차 로직
+  function startHouseVideo() {
+    if (isResetting) return; 
+    
+    const bgAlt = document.getElementById('bgAlt');
+
+    // [CASE 1] 완전히 새로 처음부터 재생할 때 ➔ 3초간 서서히 페이드 효과 적용 (지연 재생)
+    if (nextTurnPrepared) {
+      // 3초 동안 서서히 투명도가 변하도록 트랜지션 주입
+      bgAlt.style.transition = "opacity 3s ease-in-out";
+
+      // 누르는 즉시 재생버튼 오버레이를 먼저 확실하게 지워서 치워버림
+      playOverlay.classList.add('playing');
+
+      if (!isAlternateBg) {
+        bgAlt.style.opacity = "1"; // main01 이미지를 선명하게 띄워 페이드 전환
+        isAlternateBg = true;
+      } else {
+        bgAlt.style.opacity = "0"; // main 이미지를 노출하며 페이드 전환
+        isAlternateBg = false;
+      }
+      
+      nextTurnPrepared = false;
+
+      // 정확하게 3초(3000ms) 동안 배경이 완전히 전환된 후 비디오 재생 가동
+      setTimeout(() => {
+        executeActualPlay();
+      }, 3000);
+
+    } else {
+      // [CASE 2] 영상을 보다가 중간에 멈췄다 다시 재생할 때 ➔ 딜레이 없이 즉시 투명도 전환
+      bgAlt.style.transition = "none";
+
+      if (!isAlternateBg) {
+        bgAlt.style.opacity = "1"; 
+        isAlternateBg = true;
+      } else {
+        bgAlt.style.opacity = "0"; 
+        isAlternateBg = false;
+      }
+
+      executeActualPlay();
+    }
+  }
+
+  /**
+   * 비디오 가동 인터렉션 실제 제어 전용 서브 시스템
+   */
+  function executeActualPlay() {
+    houseVideo.muted = false; 
+    houseVideo.play().catch(error => {
+      console.log("자동재생 제한 우회 가동");
+      houseVideo.muted = true; 
+      houseVideo.play();
+    });
+  }
+
+  // 영상이 완전히 끝나거나 재생바로 끝에 도달했을 때 천천히 사라지는 기능 (원본과 동일)
+  function resetVideoToInitial() {
+    if (isResetting) return;
+    isResetting = true;
+
+    houseVideo.removeAttribute("controls");         
+    houseVideo.style.opacity = '0';                
+    houseVideo.style.visibility = 'hidden';         
+
+    // 타이머 1600ms 동기화 유지
+    setTimeout(() => {
+      playOverlay.classList.remove('playing');     
+      houseVideo.currentTime = 0;                  
+      isResetting = false;
+      nextTurnPrepared = true;
+    }, 1600); 
+  }
+
+  // 영상이 실제로 재생되기 시작할 때 실행할 일 (원본과 동일)
+  houseVideo.addEventListener('play', () => {
+    if (isResetting) return;
+    playOverlay.classList.add('playing');        
+    houseVideo.style.visibility = 'visible';     
+    houseVideo.style.opacity = '1';              
+    houseVideo.setAttribute("controls", "true"); 
+  });
+
+  // 사용자가 중간에 수동으로 일시정지(Pause) 버튼을 눌렀을 때의 처리 (원본과 동일)
+  houseVideo.addEventListener('pause', () => {
+    if (isResetting) return;
+    if (!houseVideo.ended && houseVideo.currentTime < houseVideo.duration) {
+      playOverlay.classList.remove('playing');     
+    }
+  });
+
+  // 영상 재생이 자연스럽게 끝까지 완료되었을 때 (원본과 동일)
+  houseVideo.addEventListener('ended', () => {
+    resetVideoToInitial();
+  });
+
+  // 사용자가 재생 바를 조작해 강제로 맨 끝으로 이동시켰을 때 대처
+  houseVideo.addEventListener('timeupdate', () => {
+    if (houseVideo.currentTime >= houseVideo.duration) {
+      resetVideoToInitial();
+    }
+  });
+</script>
+
+</body>
+</html>

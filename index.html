@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4분할 메인 - 최종 완성본</title>
+
+<style>
+
+/* =====================================================
+   🎛️ 설정
+   ===================================================== */
+:root {
+  /* PC 박스 사이 간격 */
+  --gap: 24px;
+
+  /* 이미지 위치 */
+  --apt-pos: 80% center;
+  --house-pos: 90% center;
+  --park-pos: 50% center;
+  --gallery-pos: 30% center;
+
+  /* hover 확대 */
+  --hover-scale: 1.05;
+
+  /* [핵심 수정] 검은 사각형 박스를 지우고, 아주 연하고 부드러운 좌우 안개 그림자 적용 (40% 지점에서 소멸) */
+  --text-bg: linear-gradient(to right, rgba(0, 0, 0, 0.45) 0%, rgba(0, 0, 0, 0.15) 25%, rgba(0, 0, 0, 0) 40%);
+  --text-color: #fff;
+
+  /* 모서리 라운딩 */
+  --radius: 18px;
+}
+
+/* =====================================================
+   기본 스타일
+   ===================================================== */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: #111; 
+  font-family: sans-serif;
+}
+
+/* =====================================================
+   레이아웃 (PC 버전)
+   ===================================================== */
+.container {
+  display: grid;
+  grid-template-columns: 1fr 1fr; 
+  grid-template-rows: 1fr 1fr;    
+  gap: var(--gap);
+  height: 100vh;
+  padding: 40px 60px; 
+  box-sizing: border-box;
+}
+
+/* =====================================================
+   공통 카드 및 콘텐츠 배치
+   ===================================================== */
+.section {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  border-radius: var(--radius);
+  transition: .3s;
+}
+
+.section:hover {
+  box-shadow: 0 10px 30px rgba(0,0,0,.5);
+}
+
+.section img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: .5s ease-in-out;
+}
+
+.section:hover img {
+  transform: scale(var(--hover-scale));
+}
+
+/* 텍스트 박스 레이아웃 (왼쪽 하단 정렬) */
+.section .text-box {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%; 
+  background: var(--text-bg); /* 연한 안개 그림자 사용 */
+  
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end; 
+  align-items: flex-start;
+  
+  /* 설명글을 맨 밑바닥 경계선에 밀착 */
+  padding: 30px 30px 12px 30px; 
+  box-sizing: border-box;
+}
+
+/* 타이틀 스타일 */
+.section span {
+  color: var(--text-color);
+  font-size: 24px; 
+  font-weight: bold;
+  margin-bottom: 4px;
+  white-space: nowrap;
+}
+
+/* 한글 설명글 스타일 */
+.section p {
+  margin: 0; 
+  color: rgba(255,255,255,0.9); 
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* 우측 하단 고정 화살표 버튼 */
+.section .btn-arrow {
+  position: absolute;
+  right: 30px;
+  bottom: 12px;
+  
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  
+  width: 32px;
+  height: 32px;
+  
+  /* 버튼 뒤에 가벼운 텍스트 그림자를 주어 흰 이미지 위에서도 보이게 세팅 */
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  color: #fff;
+  font-size: 14px;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+  
+  transform: scale(1);
+  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), background 0.3s, color 0.3s, border-color 0.3s;
+}
+
+/* 마우스 호버 시 화살표 크기 확대 및 색상 반전 효과 */
+.section:hover .btn-arrow {
+  background: #fff;
+  color: #000;
+  border-color: #fff;
+  transform: scale(1.3); 
+}
+
+/* =====================================================
+   PC 그리드 위치 매핑
+   ===================================================== */
+.left-top { grid-column: 1; grid-row: 1; }
+.left-bottom { grid-column: 1; grid-row: 2; }
+.center { grid-column: 2; grid-row: 1; }
+.gallery-full { grid-column: 2; grid-row: 2; }
+
+/* 이미지 세부 위치 연동 */
+.left-top img { object-position: var(--apt-pos); }
+.left-bottom img { object-position: var(--house-pos); }
+.center img { object-position: var(--park-pos); }
+.gallery-full img { object-position: var(--gallery-pos); }
+
+
+/* =====================================================
+   📱 모바일 및 태블릿 반응형 (화면 너비 768px 이하일 때)
+   ===================================================== */
+@media (max-width: 768px) {
+  .container {
+    grid-template-columns: 1fr; 
+    grid-template-rows: repeat(4, 1fr); 
+    height: auto; 
+    min-height: 100vh;
+    padding: 20px; 
+    gap: 16px; 
+  }
+
+  .left-top, .left-bottom, .center, .gallery-full {
+    grid-column: 1;
+    grid-row: auto;
+    aspect-ratio: 16 / 10; 
+  }
+
+  .section .text-box {
+    padding: 20px 20px 12px 20px;
+    background: linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0) 50%);
+  }
+  .section span {
+    font-size: 20px;
+  }
+  .section p {
+    font-size: 13px;
+    max-width: 75%; 
+  }
+  
+  .section .btn-arrow {
+    right: 20px;
+    bottom: 12px;
+    width: 30px;
+    height: 30px;
+    font-size: 13px;
+  }
+  .section:hover .btn-arrow {
+    transform: none; 
+  }
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- 아파트 -->
+  <div class="section left-top" onclick="location.href='pages/apartment.html'">
+    <img src="assets/img/apartment/main.jpg" alt="아파트">
+    <div class="text-box">
+      <span>아파트</span>
+      <p>공간 평면 정보 및 인테리어와<br>생생한 3D 가상 공간 VR 투어 체험하기</p>
+    </div>
+    <div class="btn-arrow">→</div>
+  </div>
+
+  <!-- 이동식주택 -->
+  <div class="section left-bottom" onclick="location.href='pages/house.html'">
+    <img src="assets/img/house/main.jpg" alt="이동식주택">
+    <div class="text-box">
+      <span>이동식 주택</span>
+      <p>자유로운 이동과 합리적인 설계,<br>하우스 내부영상 재생하기</p>
+    </div>
+    <div class="btn-arrow">→</div>
+  </div>
+
+  <!-- 공원 -->
+  <div class="section center" onclick="location.href='pages/park.html'">
+    <img src="assets/img/park/main.jpg" alt="공원">
+    <div class="text-box">
+      <span>테마파크</span>
+      <p>자연과 어우러지는 단지 전경과<br>다채로운 힐링 레저 스팟 둘러보기</p>
+    </div>
+    <div class="btn-arrow">→</div>
+  </div>
+
+  <!-- 갤러리 -->
+  <div class="section gallery-full" onclick="location.href='pages/gallery.html'">
+    <img src="assets/img/gallery/main.jpg" alt="갤러리">
+    <div class="text-box">
+      <span>갤러리</span>
+      <p>교육·문화·휴양 다양한 건축 모델,<br>감각적인 내·외관 디자인 둘러보기</p>
+    </div>
+    <div class="btn-arrow">→</div>
+  </div>
+
+</div>
+
+</body>
+</html>
